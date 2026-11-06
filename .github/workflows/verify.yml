@@ -1,0 +1,27 @@
+name: Verify every module
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "23 5 * * 1"   # weekly: catch drift in mcp / node
+
+jobs:
+  verify:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      # Module 05 runs patterns in JavaScript too, so node is a prerequisite.
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - run: pip install -r requirements.txt
+      - run: python verify.py
